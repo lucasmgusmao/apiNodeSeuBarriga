@@ -23,6 +23,21 @@ test('Deve inserir uma conta com sucesso.', () => {
       })
 })
 
+test('Nao deve inserir uma conta sem nome', () => {
+   return request(app).post(MAIN_ROUTE)
+      .send({
+            user_id:user.id
+            })
+      .then(result => {
+         expect(result.status).toBe(400);
+         expect(result.body.error).toBe('Nome é um atributo obrigatório');
+      })
+})
+
+test.skip('Nao deve inserir uma conta com nome duplicado para o mesmo usuario', () => {
+
+})
+
 test('Deve listar todas as contas', () => {
    return app.db('accounts')
       .insert({name: 'Acc list',
@@ -36,17 +51,23 @@ test('Deve listar todas as contas', () => {
       });
 });
 
+test.skip('Deve listar apenas as contas do usuario.', () => {
+
+})
+
+test.skip('Não deve retornar uma conta de outro usuário.', () => {
+
+})
+
 test('Deve retornar uma conta por ID', () => {
    return app.db('accounts')
       .insert({name: 'Acc by id', user_id: user.id}, ['id'])
       .then(contas => request(app).get(`${MAIN_ROUTE}/${contas[0].id}`))
       .then(result => {    
             expect(result.status).toBe(200);
-            console.log(result.body);
             expect(result.body.name).toBe('Acc by id');
             expect(result.body.user_id).toBe(user.id);
-         })
-         .catch(error => console.log(error))
+         });
 });
 
 test('Deve alterar uma conta', () => {
@@ -58,4 +79,23 @@ test('Deve alterar uma conta', () => {
          expect(res.status).toBe(200);
          expect(res.body.name).toBe('Acc updated');
       });
+})
+
+
+test.skip('Não deve alterar uma conta de outro usuário.', () => {
+   
+})
+
+test('Deve remover uma conta', () => {
+   return app.db('accounts')
+      .insert({name: 'Acc to Remove', user_id: user.id}, ['id'])
+      .then(acc => request(app).delete(`${MAIN_ROUTE}/${acc[0].id}`))
+      .then(result => {
+         expect(result.status).toBe(204);
+      })
+})
+
+
+test.skip('Não deve remover uma conta de outro usuário.', () => {
+   
 })

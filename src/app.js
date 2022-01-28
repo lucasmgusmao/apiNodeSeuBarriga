@@ -2,13 +2,11 @@ const app = require('express')();
 const consign = require('consign');
 const knex = require('knex');
 const knexFile = require('../knexfile');
-const knexLogger = require('knex-logger');
+
 
 
 // TODO criar chaveamento dinâmico
 app.db = knex(knexFile.test);
-
-//app.use(knexLogger(app.db));
 
 consign({cwd: 'src', verbose: false})
    .include('./config/middlewares.js')
@@ -21,19 +19,15 @@ app.get('/', (req, res) => {
    res.status(200).send();
 })
 
-/* app.get('/users', (req, res) => {
-   res.status(200).send({status: "OK"});
-}) */
-/* app.db.on('query', (query) => {
-   console.log({
-               sql: query.sql,
-               bindings: query.bindings? query.bindings.join(', '): ""
-            }
-   )
-}).on('query-response', (response) => {
-   console.log(response);
-}).on('error', (err) => {
-   console.log(err);
-}); */
+app.use((err, req, res, next) => {
+   const {name, message, stack } = err;
+   if (name === 'ValidationError') {
+      res.status(400).json({error: message});
+   }else{
+      res.status(500).json({name, message, stack})
+   }
+   next();
+});
+
 
 module.exports = app;

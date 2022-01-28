@@ -7,8 +7,7 @@ test('Deve listar os usuários.', () => {
       .then(res => {
          expect(res.status).toBe(200);
          expect(res.body.length).toBeGreaterThan(0);
-      })
-      .catch(error => console.log(error));
+      });
 });
 
 test('Deve inserir usuario com sucesso.', () => {
@@ -21,8 +20,7 @@ test('Deve inserir usuario com sucesso.', () => {
       .then(res => {
          expect(res.status).toBe(201);
          expect(res.body.name).toBe("Walter Mitty");
-      })
-      .catch(error => console.log(error));
+      });
 })
 
 test('Nao deve inserir usuario sem nome', () => {
@@ -34,8 +32,7 @@ test('Nao deve inserir usuario sem nome', () => {
    .then(res => {
       expect(res.status).toBe(400);
       expect(res.body.error).toBe('Nome é um atributo obrigatório.');
-   })
-   .catch(error => console.log(error));
+   });
 })
 
 test('Nao deve inserir usuario sem email.', async () => {
@@ -63,7 +60,7 @@ test('Nao deve inserir usuario sem senha.', (done) => {
 });
 
 test('Não deve inserir usuário com email existente.', () => {
-   return request(app).post('/users')
+   request(app).post('/users')
    .send({
       name: "Walter Mitty",
       email: '1643204152645@mail.com',
@@ -72,6 +69,5 @@ test('Não deve inserir usuário com email existente.', () => {
    .then(res => {
       expect(res.status).toBe(400);
       expect(res.body.error).toBe("Já existe um usuário com esse email.");
-   })
-   .catch(error => console.log(error));
+   });
 });

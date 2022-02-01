@@ -1,42 +1,45 @@
 const { mutateExecOptions } = require("nodemon/lib/config/load");
 const app = require("../app");
+const express = require('express');
 
 module.exports = (app) =>{
-   const findAll = (req, res, next) => {
-      app.services.account.findAll()
-      .then(result => res.status(200).json(result))
-      .catch(error => next(error));
-   }
-
-   const create = (req, res, next) => {
+   const router = express.Router();
+   
+   router.post('/', (req, res, next) => {
       app.services.account.save(req.body)
       .then(result => {return res.status(201).json(result[0])})
       .catch(e => next(e));
-   }
+   });
 
-   const findOne = (req, res, next) => {
+   router.get('/', (req, res, next) => {
+      app.services.account.findAll()
+      .then(result => res.status(200).json(result))
+      .catch(error => next(error));
+   });
+   
+   router.get('/:id', (req, res, next) => {
       app.services.account.findOne({id : req.params.id})
       .then(result => {
          res.status(200).json(result);
       })
       .catch(error => next(error));
-   }
+   });
 
-   const updateOne = (req, res, next) => {
+   router.put('/:id', (req, res, next) => {
       app.services.account.updateOne(req.params.id, req.body)
       .then(result => {
          res.status(200).json(result[0]);
       })
       .catch(error => next(error));
-   }
+   });
 
-   const deleteOne = (req, res) => {
+   router.delete('/:id', (req, res) => {
       app.services.account.deleteOne(req.params.id)
       .then(result =>{
          res.status(204).send();
       })
       .catch(error => next(error));
-   }
+   });
 
-   return {findAll, create, findOne, updateOne, deleteOne};
+   return router;
 };

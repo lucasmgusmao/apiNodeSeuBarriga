@@ -46,7 +46,7 @@ test('Nao deve autenticar usuario com senha errada', () => {
 })
 
 test('Nao deve acesar as rotas protegidas sem token', () => {
-   return request(app).get('/v1/users')
+   return request(app).get('/v1/ausers')
    .then(result => {
       expect(result.status).toBe(401);
    })

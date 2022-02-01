@@ -5,21 +5,40 @@ const jwt = require('jwt-simple');
 
 const MAIN_ROUTE = '/v1/accounts';
 let user;
+let user2;
 
-beforeAll( async () => {
+beforeEach( async () => {
    const res = await app.services.user.save({name: 'UserAccount',
                                             email: `${Date.now()}@mail.com`,
                                             senha: '123456'});
    user = {... res[0] };
    user.token = jwt.encode(user, 'Segredo!');
+
+   const res2 = await app.services.user.save({name: 'UserAccount 2',
+                                            email: `${Date.now()}@mail.com`,
+                                            senha: '123456'});
+   user2 = {... res2[0] };
+})
+
+test('Deve listar apenas as contas do usuario.', () => {
+   return app.db('accounts').insert([
+      {name: 'Acc User #1', user_id: user.id},
+      {name: 'Acc User #2', user_id: user2.id},
+      
+   ]).then( () => {
+      request(app).get(MAIN_ROUTE)
+      .set('authorization', `bearer ${user.token}`)
+      .then(result => {
+         expect(result.status).toBe(200);
+         expect(result.body.length).toBe(1);
+         expect(result.body[0].name).toBe('Acc User #1');
+      })
+   })
 })
 
 test('Deve inserir uma conta com sucesso.', () => {
    return request(app).post(MAIN_ROUTE)
-      .send({
-            name: 'Acc #1',
-            user_id:user.id
-            })
+      .send({name: 'Acc #1'})
       .set('authorization', `bearer ${user.token}`)
       .then(result => {
          expect(result.status).toBe(201);
@@ -29,9 +48,7 @@ test('Deve inserir uma conta com sucesso.', () => {
 
 test('Nao deve inserir uma conta sem nome', () => {
    return request(app).post(MAIN_ROUTE)
-      .send({
-            user_id:user.id
-            })
+      .send({})
       .set('authorization', `bearer ${user.token}`)
       .then(result => {
          expect(result.status).toBe(400);
@@ -39,30 +56,29 @@ test('Nao deve inserir uma conta sem nome', () => {
       })
 })
 
-test.skip('Nao deve inserir uma conta com nome duplicado para o mesmo usuario', () => {
-
+test('Nao deve inserir uma conta com nome duplicado para o mesmo usuario', () => {
+   return app.db('accounts').insert({name: 'Acc duplicada', user_id: user.id})
+   .then( () => {
+      console.log('Test user B');
+      request(app).post(MAIN_ROUTE)
+      .set('authorization', `bearer ${user.token}`)
+      .send({name: "Acc duplicada"})
+      .then( result => {
+         expect(result.status).toBe(400);
+         expect(result.body.error).toBe('Já existe uma conta com esse nome');
+      })
+   })
 })
 
-test('Deve listar todas as contas', () => {
+test('Não deve retornar uma conta de outro usuário.', () => {
    return app.db('accounts')
-      .insert({name: 'Acc list',
-              user_id: user.id})
-      .then(() => {
-         request(app).get(MAIN_ROUTE)
-         .set('authorization', `bearer ${user.token}`)
-         .then(result => {
-            expect(result.status).toBe(200);
-            expect(result.body.length).toBeGreaterThan(0);
-         })
-      });
-});
-
-test.skip('Deve listar apenas as contas do usuario.', () => {
-
-})
-
-test.skip('Não deve retornar uma conta de outro usuário.', () => {
-
+      .insert({name: 'Acc User #2', user_id: user2.id}, ['id'])
+      .then( acc => request(app).get(`${MAIN_ROUTE}/${acc[0].id}`)
+         .set('authorization', `bearer ${user.token}`))
+      .then( res => {
+         expect(res.status).toBe(403);
+         expect(res.body.error).toBe('Este recurso nao pertence ao usuario');
+      })
 })
 
 test('Deve retornar uma conta por ID', () => {

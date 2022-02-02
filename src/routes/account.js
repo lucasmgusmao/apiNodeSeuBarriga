@@ -1,10 +1,21 @@
 const { mutateExecOptions } = require("nodemon/lib/config/load");
 const app = require("../app");
 const express = require('express');
+const RescursoIndevido = require('../errors/ResursoIndevidoError');
 
 module.exports = (app) =>{
    const router = express.Router();
    
+   router.param('id', (req, res, next) => {
+      app.services.account.findOne({id : req.params.id})
+      .then((acc) => {
+         if (acc.user_id !== req.user.id){
+            throw new RescursoIndevido();
+         }
+         else next();
+      }).catch(e => next(e));
+   });
+
    router.post('/', (req, res, next) => {
       app.services.account.save({... req.body, user_id: req.user.id})
       .then(result => {return res.status(201).json(result[0])})

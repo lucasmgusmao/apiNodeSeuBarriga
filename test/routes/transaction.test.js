@@ -53,11 +53,25 @@ test('Deve listar apenas as transacoes do usuario', () => {
    });
 })
 
-test('Deve funcionar com os snippets', () => {
-   return request(app).get(MAIN_ROUTE)
+test('Deve inserir uma transacao com sucesso', () => {
+   return request(app).post(MAIN_ROUTE)
+      .set('authorization', `bearer ${user.token}`)
+      .send({description: "New T", date: new Date(), ammount: 100, type: "I", acc_id: accUser.id})
+      .then(res => {
+         expect(res.status).toBe(201);
+         expect(res.body.acc_id).toBe(accUser.id);
+      });
+})
+
+test('Deve retornar uma transacao por ID', () => {
+   return app.db('transactions').insert(
+      {description: "T ID", date: new Date(), ammount: 100, type: "I", acc_id: accUser.id}, ['id']
+   )
+   .then(result => request(app).get(`${MAIN_ROUTE}/${result[0].id}`)
       .set('authorization', `bearer ${user.token}`)
       .then(res => {
          expect(res.status).toBe(200);
-         expect(res.body[0].description).toBe('T1');
-      });
+         expect(res.body.id).toBe(result[0].id);
+         expect(res.body.description).toBe('T ID');
+      }))
 })

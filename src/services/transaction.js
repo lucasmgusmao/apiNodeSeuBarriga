@@ -6,5 +6,17 @@ module.exports = (app) => {
       .andWhere('accounts.user_id', '=', userId)
       .select();
    }
-   return {find};
+   
+   const findById = (filter) => {
+      return app.db('transactions')
+      .where(filter)
+      .first();
+   }
+
+   const save = (trans) => {
+      return app.db('transactions')
+         .insert(trans, '*');
+   }
+
+   return {find, save, findById};
 }

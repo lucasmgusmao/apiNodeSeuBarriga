@@ -18,5 +18,11 @@ module.exports = (app) => {
          .insert(trans, '*');
    }
 
-   return {find, save, findById};
+   const updateById = (filter, trans) => {
+      return app.db('transactions')
+      .where(filter)
+      .update(trans, '*');
+   }
+
+   return {find, save, findById, updateById};
 }

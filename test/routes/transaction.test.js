@@ -1,6 +1,7 @@
 const request = require('supertest');
 const app = require('../../src/app');
 const jwt = require('jwt-simple');
+const { restart } = require('nodemon');
 
 const MAIN_ROUTE = '/v1/transactions';
 let user;
@@ -74,4 +75,19 @@ test('Deve retornar uma transacao por ID', () => {
          expect(res.body.id).toBe(result[0].id);
          expect(res.body.description).toBe('T ID');
       }))
+})
+
+test('Deve alterar uma transacao', () => {
+   return app.db('transactions')
+      .insert({description: "T UP", date: new Date(), ammount: 100, type: "I", acc_id: accUser.id}, ['id']
+   )
+   .then(result => request(app).put(`${MAIN_ROUTE}/${result[0].id}`)
+      .send({description: 'T UPDATED'})
+      .set('authorization', `bearer ${user.token}`)
+      .then(res => {
+         expect(res.status).toBe(200);
+         expect(res.body.description).toBe('T UPDATED');
+      }))
+      .catch(e => next(e));
+
 })

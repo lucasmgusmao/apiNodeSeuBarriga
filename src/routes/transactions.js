@@ -22,5 +22,11 @@ module.exports = (app) => {
       .catch(e => next(e));
    })
 
+   router.put('/:id', (req, res, next) => {
+      app.services.transaction.updateById({id: req.params.id}, req.body)
+      .then(result => res.status(200).json(result[0]))
+      .catch(e => {console.log(e); next(e)});
+   })
+
    return router;
 }

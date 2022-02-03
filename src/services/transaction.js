@@ -24,5 +24,6 @@ module.exports = (app) => {
       .update(trans, '*');
    }
 
+   // Abaixo os métodos são exportados para as rotas.
    return {find, save, findById, updateById};
 }

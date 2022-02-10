@@ -16,13 +16,17 @@ module.exports = (app) => {
       return app.db('accounts').where(filter).first();
    }
 
-   const updateOne = (id, account) => {
+   const updateOne = (id, account) => {      
       return app.db('accounts')
       .where({id})
       .update(account, '*');
    }
 
-   const deleteOne = (id) => {
+   const deleteOne = async (id) => {      
+      const tra = await app.services.transaction.findById({acc_id: id});
+      if (tra){
+         throw new ValidationError('Essa conta possui transacoes associadas.');
+      }
       return app.db('accounts')
       .where({id})
       .delete();

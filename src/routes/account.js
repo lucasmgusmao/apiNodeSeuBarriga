@@ -46,7 +46,7 @@ module.exports = (app) =>{
       .catch(error => next(error));
    });
 
-   router.delete('/:id', (req, res) => {
+   router.delete('/:id', (req, res, next) => {
       app.services.account.deleteOne(req.params.id)
       .then(result =>{
          res.status(204).send();
